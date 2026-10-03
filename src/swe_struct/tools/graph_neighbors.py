@@ -15,6 +15,8 @@ RELATION_LABELS = {
     ("imports", "in"): "imported_by",
     ("inherits", "out"): "base_class",
     ("inherits", "in"): "subclass",
+    ("contains", "out"): "member",
+    ("contains", "in"): "container",
 }
 
 class GraphNeighborsTool:

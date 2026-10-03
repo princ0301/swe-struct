@@ -41,3 +41,15 @@ def test_description_is_configurable(tiny_graph):
     tool = GraphNeighborsTool(tiny_graph, description="custom")
     assert tool.spec.description == "custom"
     assert tool.spec.name == "graph_neighbors"
+
+def test_contains_edges_have_readable_labels(ctx):
+    from swe_struct.graph.model import CodeGraph, Edge, EdgeKind, Node, NodeKind
+
+    nodes = [
+        Node(id="m.py", kind=NodeKind.FILE, path="m.py"),
+        Node(id="m.py::f", kind=NodeKind.FUNCTION, path="m.py"),
+    ]
+    graph = CodeGraph(nodes, [Edge(source="m.py", target="m.py::f", kind=EdgeKind.CONTAINS)])
+    tool = GraphNeighborsTool(graph)
+    assert "hop 1 member: m.py::f" in tool(ctx, symbol="m.py", direction="out").content
+    assert "hop 1 container: m.py" in tool(ctx, symbol="f", direction="in").content

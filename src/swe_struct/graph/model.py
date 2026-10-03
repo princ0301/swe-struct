@@ -16,11 +16,14 @@ class EdgeKind(StrEnum):
     CALLS = "calls"
     IMPORTS = "imports"
     INHERITS = "inherits"
+    CONTAINS = "contains"
 
 class Node(BaseModel):
     id: str
     kind: NodeKind
     path: str
+    start_line: int | None = None
+    end_line: int | None = None
 
 class Edge(BaseModel):
     source: str
@@ -54,6 +57,10 @@ class CodeGraph:
             if qualified == query or qualified.endswith("." + query):
                 matches.append(node_id)
         return sorted(matches)
+
+    def adjacent(self, node_id: str, kinds: frozenset[EdgeKind] | None = None) -> list[str]:
+        pairs = self._out.get(node_id, []) + self._in.get(node_id, [])
+        return sorted({other for other, kind in pairs if kinds is None or kind in kinds})
 
     def neighbors(self, node_id: str, direction: Direction = "both", max_hops: int = 1) -> list[Reach]:
         sides: list[tuple[Literal["out", "in"], dict[str, list[tuple[str, EdgeKind]]]]] = []
