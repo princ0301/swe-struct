@@ -1,0 +1,14 @@
+# Model ladder. Verify every repo id on Hugging Face before the main runs.
+# Serve ALL sizes with the same stack and the same precision (all BF16 or all QAT).
+models:
+  e2b:  { hf_id: google/gemma-4-E2B-it,      optional: true }
+  e4b:  { hf_id: google/gemma-4-E4B-it }
+  m26b: { hf_id: google/gemma-4-26B-A4B-it }
+  d31b: { hf_id: google/gemma-4-31B-it }
+# QAT w4a16 ids: E4B confirmed in the vLLM recipe; 26B and 31B ids are UNVERIFIED (by analogy).
+qat:
+  e4b:  google/gemma-4-E4B-it-qat-w4a16-ct
+  m26b: TODO_verify
+  d31b: TODO_verify
+dev_backends:
+  ollama_cloud: { base_url: "http://localhost:11434/v1", model: "gemma4:31b-cloud" }  # development only, never for paper results

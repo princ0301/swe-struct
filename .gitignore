@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.env
+*.egg-info/
+runs/logs/
+runs/*.jsonl
+data_cache/
+repos_cache/
+*.safetensors
+.ipynb_checkpoints/
