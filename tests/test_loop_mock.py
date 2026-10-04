@@ -53,3 +53,31 @@ def test_unknown_tool_is_logged_as_failed(registry, ctx):
     backend = MockBackend([tool_reply("nope", {}), text_reply("done")])
     outcome = run(backend, registry, ctx)
     assert not outcome.steps[0].tool_events[0].ok
+
+def test_tools_outside_the_exposed_list_are_rejected(registry, ctx):
+    backend = MockBackend([tool_reply("submit", {"files": ["a.py"]}), text_reply("done")])
+    outcome = run_agent(
+        backend=backend,
+        registry=registry,
+        ctx=ctx,
+        messages=[Message(role="user", content="task")],
+        tool_names=["echo"],
+        limits=Limits(max_steps=3),
+    )
+    assert not outcome.steps[0].tool_events[0].ok
+    assert outcome.submission is None
+
+def test_first_turn_can_force_a_tool(registry, ctx):
+    backend = MockBackend([tool_reply("echo", {"text": "x"}), text_reply("done")])
+    run_agent(
+        backend=backend,
+        registry=registry,
+        ctx=ctx,
+        messages=[Message(role="user", content="task")],
+        tool_names=NAMES,
+        limits=Limits(max_steps=3),
+        forced_first_tool="echo",
+    )
+    forced = {"type": "function", "function": {"name": "echo"}}
+    assert backend.sampling_calls[0]["tool_choice"] == forced
+    assert "tool_choice" not in backend.sampling_calls[1]

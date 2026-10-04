@@ -1,4 +1,5 @@
 import ast
+import warnings
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -99,7 +100,9 @@ class _Builder:
             self.stats.files += 1
             self.nodes[relative] = Node(id=relative, kind=NodeKind.FILE, path=relative)
             try:
-                tree = ast.parse(file.read_text(encoding="utf-8", errors="replace"))
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    tree = ast.parse(file.read_text(encoding="utf-8", errors="replace"))
             except (SyntaxError, ValueError, RecursionError):
                 self.stats.parse_failures += 1
                 continue

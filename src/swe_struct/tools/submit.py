@@ -8,7 +8,11 @@ class SubmitTool:
             "type": "object",
             "properties": {
                 "files": {"type": "array", "items": {"type": "string"}},
-                "functions": {"type": "array", "items": {"type": "string"}},
+                "functions": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Use the form path/to/file.py::Class.method or path/to/file.py::function.",
+                },
             },
             "required": ["files"],
         },

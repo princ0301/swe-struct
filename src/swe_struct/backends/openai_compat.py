@@ -80,7 +80,7 @@ class OpenAICompatBackend:
         }
         if tools:
             body["tools"] = [tool.to_wire() for tool in tools]
-            body["tool_choice"] = "auto"
+            body.setdefault("tool_choice", "auto")
         start = time.perf_counter()
         response = self._client.post("chat/completions", json=body)
         response.raise_for_status()

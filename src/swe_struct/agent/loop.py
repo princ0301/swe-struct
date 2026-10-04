@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from swe_struct.agent.limits import Limits
 from swe_struct.backends.backend import Backend
 from swe_struct.core.schema import StepRecord, ToolEvent
-from swe_struct.core.types import Message, RepoContext
+from swe_struct.core.types import Message, RepoContext, ToolResult
 from swe_struct.tools.registry import ToolRegistry
 
 TRUNCATION_MARKER = "\n[output truncated]"
@@ -29,20 +29,28 @@ def run_agent(
     tool_names: list[str],
     limits: Limits,
     sampling: dict[str, Any] | None = None,
+    forced_first_tool: str | None = None,
 ) -> AgentOutcome:
     specs = registry.specs(tool_names)
+    exposed = set(tool_names)
     steps: list[StepRecord] = []
     submission: dict[str, Any] | None = None
     stop_reason = "max_steps"
     for index in range(limits.max_steps):
-        result = backend.chat(messages, specs, **(sampling or {}))
+        call_sampling = dict(sampling or {})
+        if index == 0 and forced_first_tool:
+            call_sampling["tool_choice"] = {"type": "function", "function": {"name": forced_first_tool}}
+        result = backend.chat(messages, specs, **call_sampling)
         messages.append(
             Message(role="assistant", content=result.content, tool_calls=result.tool_calls)
         )
         events: list[ToolEvent] = []
         finished = False
         for call in result.tool_calls:
-            outcome = registry.call(call.name, ctx, call.arguments)
+            if call.name in exposed:
+                outcome = registry.call(call.name, ctx, call.arguments)
+            else:
+                outcome = ToolResult(content=f"unknown tool: {call.name}", ok=False)
             content, truncated = clip(outcome.content, limits.max_tool_output_chars)
             events.append(
                 ToolEvent(

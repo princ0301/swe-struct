@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import httpx
 import pytest
 
 from swe_struct.graph.model import CodeGraph, Edge, EdgeKind, Node, NodeKind
@@ -56,3 +57,7 @@ def tiny_graph() -> CodeGraph:
         Edge(source="app/main.py", target="app/base.py", kind=EdgeKind.IMPORTS),
     ]
     return CodeGraph(nodes, edges)
+
+class FailingBackend:
+    def chat(self, messages, tools, **sampling):
+        raise httpx.ConnectError("unreachable")

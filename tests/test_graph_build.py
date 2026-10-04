@@ -1,3 +1,4 @@
+import warnings
 from pathlib import Path
 
 from swe_struct.graph.build import build_graph
@@ -144,3 +145,11 @@ def test_nested_function_owns_its_calls(tmp_path):
 def test_definitions_inside_try_are_found(tmp_path):
     write(tmp_path, {"m.py": "try:\n    def f():\n        pass\nexcept Exception:\n    pass\n"})
     assert "m.py::f" in build_graph(tmp_path).graph.nodes
+
+def test_invalid_escape_warnings_are_silenced(tmp_path):
+    source = r'PATTERN = "\d+ \w"' + "\n\ndef f():\n    pass\n"
+    write(tmp_path, {"m.py": source})
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        result = build_graph(tmp_path)
+    assert "m.py::f" in result.graph.nodes

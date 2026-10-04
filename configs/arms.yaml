@@ -1,0 +1,23 @@
+arms:
+  A1:
+    name: grep_only
+    tools: [list_dir, view_file, search_text, submit]
+  A2:
+    name: graph_optional
+    tools: [list_dir, view_file, search_text, graph_neighbors, submit]
+  A3:
+    name: graph_reminder
+    tools: [list_dir, view_file, search_text, graph_neighbors, submit]
+    reminder: true
+  A4:
+    name: graph_forced
+    tools: [list_dir, view_file, search_text, graph_neighbors, submit]
+    force_first_tool: graph_neighbors
+  A5:
+    name: graph_passive
+    tools: [list_dir, view_file, search_text, submit]
+    passive_hints: true
+  A6:
+    name: graph_random
+    tools: [list_dir, view_file, search_text, graph_neighbors, submit]
+    shuffle_graph: true

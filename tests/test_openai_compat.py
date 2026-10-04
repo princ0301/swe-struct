@@ -70,3 +70,26 @@ def test_assistant_tool_call_wire_format():
     wire = message_to_wire(message)
     assert wire["content"] == ""
     assert json.loads(wire["tool_calls"][0]["function"]["arguments"]) == {"text": "hi"}
+
+def test_explicit_tool_choice_is_forwarded():
+    seen = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["body"] = json.loads(request.content)
+        return httpx.Response(200, json=tool_payload("{}"))
+
+    spec = ToolSpec(name="echo", description="d", parameters={"type": "object"})
+    forced = {"type": "function", "function": {"name": "echo"}}
+    make_backend(handler).chat([Message(role="user", content="go")], [spec], tool_choice=forced)
+    assert seen["body"]["tool_choice"] == forced
+
+def test_default_tool_choice_is_auto():
+    seen = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["body"] = json.loads(request.content)
+        return httpx.Response(200, json=tool_payload("{}"))
+
+    spec = ToolSpec(name="echo", description="d", parameters={"type": "object"})
+    make_backend(handler).chat([Message(role="user", content="go")], [spec])
+    assert seen["body"]["tool_choice"] == "auto"
